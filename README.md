@@ -1,12 +1,45 @@
 
-# Data Science Analysis for Fraud Detection
-<img align="right" src='reference/image.png' width=20%>
+# Data Science for Fraud Detection
+<img align="right" src='https://bashny.net/uploads/images/00/00/44/2016/09/19/acae85e767.jpg' width=35%>
 
-**IT Systems & Risk Mgmt**
+### Enterprise Advanced Analytics: IT Systems & Risk Management
 
-The data for analysis has financial transactions as well as the tagged target variable **isFraud**, which is the actual fraud status of the transaction; And **isFlaggedFraud** is the indicator which the current IT system flags suspicious fraudulent transaction using internal threshold.
+**The aim is to explore, visualize and pre-process fraud related financial transaction data, then experiment with a (simple) machine learning model to learn and predict fraudulent transaction. Evaluate performance of the new model vs. existing practice.**
 
-The objective is to analyze data, then build a machine learning model to capture the fraud transaction. Evaluate the new model vs. existing one.
+
+By: 
+
+
+顾 瞻 GU Zhan (Sam) [LinkedIn](https://sg.linkedin.com/in/zhan-gu-27a82823)
+
+
+[SamIsITspecialist@gmail.com](SamIsITspecialist@gmail.com)
+
+
+June 2017
+
+
+---
+
+The CSV tabular data for analysis has **6 millon plus** financial transactions, containing **11 fields**. Here is some sample data:
+
+|step|type|amount|nameOrig|oldbalanceOrg|newbalanceOrig|nameDest|oldbalanceDest|newbalanceDest|isFraud|isFlaggedFraud
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:
+|1|PAYMENT|9839.64|C1231006815|170136.00|160296.36|M1979787155|0.0|0.00|0|0
+|1|PAYMENT|1864.28|C1666544295|21249.00|19384.72|M2044282225|0.0|0.00|0|0
+|1|TRANSFER|181.00|C1305486145|181.00|0.00|C553264065|0.0|0.00|1|0
+|1|CASH_OUT|181.00|C840083671|181.00|0.00|C38997010|21182.0|0.00|1|0
+|1|PAYMENT|11668.14|C2048537720|41554.00|29885.86|M1230701703|0.0|0.00|0|0
+|1|PAYMENT|7817.71|C90045638|53860.00|46042.29|M573487274|0.0|0.00|0|0
+|1|PAYMENT|7107.77|C154988899|183195.00|176087.23|M408069119|0.0|0.00|0|0
+|1|PAYMENT|7861.64|C1912850431|176087.23|168225.59|M633326333|0.0|0.00|0|0
+|1|PAYMENT|4024.36|C1265012928|2671.00|0.00|M1176932104|0.0|0.00|0|0
+|1|DEBIT|5337.77|C712410124|41720.00|36382.23|C195600860|41898.0|40348.79|0|0
+
+The tagged fields: 
+* **isFraud** indicates actual fraudulent transactiona. 
+* **isFlaggedFraud** indicates suspicious fraudulent transactiona detected by current IT system, risk management process.
+
 
 ### Import libraries
 
@@ -37,7 +70,7 @@ warnings.filterwarnings("ignore")
 
     /home/user/env_py3/lib/python3.5/site-packages/sklearn/cross_validation.py:44: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. Also note that the interface of the new CV iterators are different from that of this module. This module will be removed in 0.20.
       "This module will be removed in 0.20.", DeprecationWarning)
-
+    
 
 
 ```python
@@ -68,21 +101,23 @@ def checking_na(df):
         print("{}: Something is wrong".format(now()))
 ```
 
+### Ingest financial transaction input data:
+
 
 ```python
 raw_data = my_file_read("PS_20174392719_1491204439457_log.csv")
 ```
 
-    2017-06-01 14:57:03: PS_20174392719_1491204439457_log.csv has 6362620 observations and 11 columns
+    2017-06-04 00:21:20: PS_20174392719_1491204439457_log.csv has 6362620 observations and 11 columns
     
-    2017-06-01 14:57:03: Column name checking::: ['step', 'type', 'amount', 'nameOrig', 'oldbalanceOrg', 'newbalanceOrig', 'nameDest', 'oldbalanceDest', 'newbalanceDest', 'isFraud', 'isFlaggedFraud']
+    2017-06-04 00:21:20: Column name checking::: ['step', 'type', 'amount', 'nameOrig', 'oldbalanceOrg', 'newbalanceOrig', 'nameDest', 'oldbalanceDest', 'newbalanceDest', 'isFraud', 'isFlaggedFraud']
+    
 
-
-Quickly look at the dataset sample and other properties.
+### Quickly look at the dataset sample and other properties:
 
 
 ```python
-raw_data.head()
+raw_data.head(10)
 # raw_data.info()
 # print(checking_na(raw_data))
 ```
@@ -128,11 +163,11 @@ raw_data.head()
       <td>PAYMENT</td>
       <td>9839.64</td>
       <td>C1231006815</td>
-      <td>170136.0</td>
+      <td>170136.00</td>
       <td>160296.36</td>
       <td>M1979787155</td>
       <td>0.0</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>0</td>
       <td>0</td>
     </tr>
@@ -142,11 +177,11 @@ raw_data.head()
       <td>PAYMENT</td>
       <td>1864.28</td>
       <td>C1666544295</td>
-      <td>21249.0</td>
+      <td>21249.00</td>
       <td>19384.72</td>
       <td>M2044282225</td>
       <td>0.0</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>0</td>
       <td>0</td>
     </tr>
@@ -156,11 +191,11 @@ raw_data.head()
       <td>TRANSFER</td>
       <td>181.00</td>
       <td>C1305486145</td>
-      <td>181.0</td>
+      <td>181.00</td>
       <td>0.00</td>
       <td>C553264065</td>
       <td>0.0</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>1</td>
       <td>0</td>
     </tr>
@@ -170,11 +205,11 @@ raw_data.head()
       <td>CASH_OUT</td>
       <td>181.00</td>
       <td>C840083671</td>
-      <td>181.0</td>
+      <td>181.00</td>
       <td>0.00</td>
       <td>C38997010</td>
       <td>21182.0</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>1</td>
       <td>0</td>
     </tr>
@@ -184,11 +219,81 @@ raw_data.head()
       <td>PAYMENT</td>
       <td>11668.14</td>
       <td>C2048537720</td>
-      <td>41554.0</td>
+      <td>41554.00</td>
       <td>29885.86</td>
       <td>M1230701703</td>
       <td>0.0</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1</td>
+      <td>PAYMENT</td>
+      <td>7817.71</td>
+      <td>C90045638</td>
+      <td>53860.00</td>
+      <td>46042.29</td>
+      <td>M573487274</td>
       <td>0.0</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1</td>
+      <td>PAYMENT</td>
+      <td>7107.77</td>
+      <td>C154988899</td>
+      <td>183195.00</td>
+      <td>176087.23</td>
+      <td>M408069119</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>1</td>
+      <td>PAYMENT</td>
+      <td>7861.64</td>
+      <td>C1912850431</td>
+      <td>176087.23</td>
+      <td>168225.59</td>
+      <td>M633326333</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1</td>
+      <td>PAYMENT</td>
+      <td>4024.36</td>
+      <td>C1265012928</td>
+      <td>2671.00</td>
+      <td>0.00</td>
+      <td>M1176932104</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>1</td>
+      <td>DEBIT</td>
+      <td>5337.77</td>
+      <td>C712410124</td>
+      <td>41720.00</td>
+      <td>36382.23</td>
+      <td>C195600860</td>
+      <td>41898.0</td>
+      <td>40348.79</td>
       <td>0</td>
       <td>0</td>
     </tr>
@@ -329,8 +434,8 @@ raw_data.describe()
 
 
 
-### 1. Exploratory Data Analysis
-In this section, we will do EDA to understand the data more. From the simulation, there are 5 transaction types as per illustrated below.
+## 1. Exploratory Data Analysis
+Let's explore to better understand the data. Rhere are five transaction types as shown below.
 
 
 ```python
@@ -347,56 +452,117 @@ plt.show()
     TRANSFER     532909
     DEBIT         41432
     Name: type, dtype: int64
+    
 
 
-
-![png](output_9_1.png)
-
-
-There are 2 flags:  **isFraud** is the indicator which indicates the actual fraud transactions whereas **isFlaggedFraud** is what the system prevents the transaction due to internal thresholds being triggered.
+![png](reference/output_14_1.png)
 
 
-Let's quickly what kinds of transaction are being flagged and are fraud...
+There are two flags:  **isFraud** is the indicator which indicates the actual fraud transactions whereas **isFlaggedFraud** is what the system prevents the transaction due to internal thresholds being triggered.
+
+
+Let's look at:
+
+### Transactions which are the actual fraud:
 
 
 ```python
 # isFraud
 ax = raw_data.groupby(['type', 'isFraud']).size().plot(kind='bar')
-ax.set_title("# of transaction which are the actual fraud per transaction type")
-ax.set_xlabel("(Type, isFraud)")
-ax.set_ylabel("Count of transaction")
+ax.set_title("# of transactions which are the actual fraud per transaction type")
+ax.set_xlabel("(Transaction Type, 0 = Not Actual Fraud | 1 = Actual Fraud)")
+ax.set_ylabel("Count of transactions")
 for p in ax.patches:
     ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()*1.01))
 ```
 
 
-![png](output_11_0.png)
+![png](reference/output_17_0.png)
 
+
+
+```python
+# isFraud - sum of amount/loss
+ax = raw_data.groupby(['type', 'isFraud'])['amount'].sum().plot(kind='bar')
+# ax = raw_data.groupby(['type', 'isFraud'])['amount'].mean().plot(kind='bar')
+ax.set_title("Sum of amount which are the actual fraud per transaction type")
+ax.set_xlabel("(Transaction Type, 0 = Not Actual Fraud | 1 = Actual Fraud)")
+ax.set_ylabel("Sum of amount")
+for p in ax.patches:
+    ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()*1.01))
+```
+
+
+![png](reference/output_18_0.png)
+
+
+### Transactions which are flagged by existing IT system:
 
 
 ```python
 # isFlaggedFraud
 ax = raw_data.groupby(['type', 'isFlaggedFraud']).size().plot(kind='bar')
-ax.set_title("# of transaction which is flagged as fraud per transaction type")
-ax.set_xlabel("(Type, isFlaggedFraud)")
-ax.set_ylabel("Count of transaction")
+ax.set_title("# of transactions which are flagged as fraud per transaction type")
+ax.set_xlabel("(Transaction Type, 0 = Not Flagged Fraud | 1 = Flagged Fraud)")
+ax.set_ylabel("Count of transactions")
 for p in ax.patches:
     ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()*1.01))
 ```
 
 
-![png](output_12_0.png)
+![png](reference/output_20_0.png)
 
 
-So it looks the current IT system can flag only 16 transfer transactions as fraud. Let's look at those records and compare with the records which the system cannot catch them.
+
+```python
+# isFlaggedFraud - sum of amount/loss
+ax = raw_data.groupby(['type', 'isFlaggedFraud'])['amount'].sum().plot(kind='bar')
+# ax = raw_data.groupby(['type', 'isFlaggedFraud'])['amount'].mean().plot(kind='bar')
+ax.set_title("Sum of amount which are flagged as fraud per transaction type")
+ax.set_xlabel("(Transaction Type, 0 = Not Flagged Fraud | 1 = Flagged Fraud)")
+ax.set_ylabel("Sum of amount")
+for p in ax.patches:
+    ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()*1.01))
+```
 
 
-The plot below will also focus only on **transfer** transaction type.
+![png](reference/output_21_0.png)
+
+
+### Loss Amount: Actual Fraud vs. IT System Flagged Farud
+
+
+```python
+# isFlaggedFraud - sum of amount/loss
+# tmp_data = raw_data[raw_data['isFraud'] ==1]
+ax = raw_data[raw_data['isFraud'] ==1].groupby(['type', 'isFlaggedFraud'])['amount'].sum().plot(kind='bar')
+# ax = raw_data[raw_data['isFraud'] ==1].groupby(['type', 'isFlaggedFraud'])['amount'].mean().plot(kind='bar')
+# ax = raw_data.groupby(['type', 'isFlaggedFraud'])['amount'].mean().plot(kind='bar')
+ax.set_title("Total Loss Amount: Actual Fraud vs. IT System Flagged Farud")
+ax.set_xlabel("(Transaction Type, 0 = Not Flagged Fraud | 1 = Flagged Fraud)")
+ax.set_ylabel("Sum of amount")
+for p in ax.patches:
+    ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()*1.01))
+```
+
+
+![png](reference/output_23_0.png)
+
+
+### <font color='red'>Insights:</font>
+* The current IT system can flag only **16** transfer transactions as fraud (out of **4,097 Transaction** + **4,116 Cash_Out** actual fraud). 
+* Ratio of detected fraud amount over total fraud amount is **77,785,563 / (5,989,202,242 + 5,989427620 + 77,785,563) = 0.64518 %**
+
+Let's look at those records and compare with the records which the system cannot catch them, focusing on: (1) Transfer transaction type (2) is actual fraud
 
 
 ```python
 fig, axs = plt.subplots(2, 2, figsize=(10, 10))
 tmp = raw_data.loc[(raw_data.type == 'TRANSFER'), :]
+print('Total Number of transactions type TRANSFER : %d' % len(tmp))
+tmp = tmp.loc[(tmp.isFraud ==1)]
+print('Total Number of transactions Actual  Fraud : %d' % len(tmp))
+print('Total Number of transactions Flagged Fraud : %d' % len(tmp.loc[(tmp.isFlaggedFraud ==1), :]))
 
 a = sns.boxplot(x = 'isFlaggedFraud', y = 'amount', data = tmp, ax=axs[0][0])
 axs[0][0].set_yscale('log')
@@ -408,12 +574,17 @@ d = sns.regplot(x = 'oldbalanceOrg', y = 'amount', data=tmp.loc[(tmp.isFlaggedFr
 plt.show()
 ```
 
+    Total Number of transactions type TRANSFER : 532909
+    Total Number of transactions Actual  Fraud : 4097
+    Total Number of transactions Flagged Fraud : 16
+    
 
-![png](output_14_0.png)
+
+![png](reference/output_25_1.png)
 
 
-### 2. Modeling & Data Pre-processing
-In this section, we will focus only **Transfer** and **Cash Out** transaction types, as they have been identified as fraud.
+## 2. Modeling & Data Pre-processing
+In this section, we will focus only **Transfer** and **Cash Out** transaction types, as they have been identified having actual fraud.
 
 
 ```python
@@ -429,7 +600,7 @@ a = np.array(tmp['type'])
 b = categorical(a, drop=True)
 tmp['type_num'] = b.argmax(1)
 
-tmp.head()
+tmp.head(10)
 ```
 
 
@@ -468,7 +639,7 @@ tmp.head()
       <th>0</th>
       <td>TRANSFER</td>
       <td>181.00</td>
-      <td>181.0</td>
+      <td>181.00</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.00</td>
@@ -479,7 +650,7 @@ tmp.head()
       <th>1</th>
       <td>CASH_OUT</td>
       <td>181.00</td>
-      <td>181.0</td>
+      <td>181.00</td>
       <td>0.0</td>
       <td>21182.0</td>
       <td>0.00</td>
@@ -490,7 +661,7 @@ tmp.head()
       <th>2</th>
       <td>CASH_OUT</td>
       <td>229133.94</td>
-      <td>15325.0</td>
+      <td>15325.00</td>
       <td>0.0</td>
       <td>5083.0</td>
       <td>51513.44</td>
@@ -501,7 +672,7 @@ tmp.head()
       <th>3</th>
       <td>TRANSFER</td>
       <td>215310.30</td>
-      <td>705.0</td>
+      <td>705.00</td>
       <td>0.0</td>
       <td>22425.0</td>
       <td>0.00</td>
@@ -512,10 +683,65 @@ tmp.head()
       <th>4</th>
       <td>TRANSFER</td>
       <td>311685.89</td>
-      <td>10835.0</td>
+      <td>10835.00</td>
       <td>0.0</td>
       <td>6267.0</td>
       <td>2719172.89</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>CASH_OUT</td>
+      <td>110414.71</td>
+      <td>26845.41</td>
+      <td>0.0</td>
+      <td>288800.0</td>
+      <td>2415.16</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>CASH_OUT</td>
+      <td>56953.90</td>
+      <td>1942.02</td>
+      <td>0.0</td>
+      <td>70253.0</td>
+      <td>64106.18</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>CASH_OUT</td>
+      <td>5346.89</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>652637.0</td>
+      <td>6453430.91</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>CASH_OUT</td>
+      <td>23261.30</td>
+      <td>20411.53</td>
+      <td>0.0</td>
+      <td>25742.0</td>
+      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>TRANSFER</td>
+      <td>62610.80</td>
+      <td>79114.00</td>
+      <td>16503.2</td>
+      <td>517.0</td>
+      <td>8383.29</td>
       <td>0</td>
       <td>1</td>
     </tr>
@@ -525,7 +751,7 @@ tmp.head()
 
 
 
-Let's see the correlation of the selected datapoint from above.
+### Let's see the paired data field's correlation:
 
 
 ```python
@@ -552,49 +778,15 @@ sns.heatmap(tmp.corr())
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f2a517de940>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f9bb93b26a0>
 
 
 
 
-![png](output_18_1.png)
+![png](reference/output_29_1.png)
 
 
-Quickly get the count and the target variable count.
-
-
-```python
-print('Total unber of transactions: %d' % len(tmp))
-
-# print(pd.value_counts(tmp['isFraud']) / len(tmp))
-# 0.99703545577566344897089202352432
-
-ax = tmp.type.value_counts().plot(kind='bar', title="Transaction type", figsize=(8, 4))
-for p in ax.patches:
-    ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()*1.01))
-
-plt.show()
-
-ax = pd.value_counts(tmp['isFraud'], sort = True).sort_index().plot(kind='bar', title="Fraud transaction count", figsize=(8, 4))
-for p in ax.patches:
-    ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()))
-    
-plt.show()
-
-```
-
-    Total unber of transactions: 2770409
-
-
-
-![png](output_20_1.png)
-
-
-
-![png](output_20_2.png)
-
-
-Based on the dataset, the numeric variables are quite skew, in this case. Let's scale it with 2 methods and compare them on the graph.
+### Below we can see that those values in original numeric fields are very skew. We then conduct re-scale data transformation using two methods: Square-Root and Box-Cox:
 
 
 ```python
@@ -623,7 +815,7 @@ plt.show()
 ```
 
 
-![png](output_22_0.png)
+![png](reference/output_31_0.png)
 
 
 
@@ -655,7 +847,7 @@ plt.show()
 ```
 
 
-![png](output_23_0.png)
+![png](reference/output_32_0.png)
 
 
 
@@ -686,7 +878,7 @@ plt.show()
 ```
 
 
-![png](output_24_0.png)
+![png](reference/output_33_0.png)
 
 
 
@@ -717,7 +909,7 @@ plt.show()
 ```
 
 
-![png](output_25_0.png)
+![png](reference/output_34_0.png)
 
 
 
@@ -748,21 +940,61 @@ plt.show()
 ```
 
 
-![png](output_26_0.png)
+![png](reference/output_35_0.png)
+
+
+### Visualize transaction type, actual fraud count:
+
+
+```python
+print('Total unber of transactions: %d' % len(tmp))
+
+# print(pd.value_counts(tmp['isFraud']) / len(tmp))
+# 0.99703545577566344897089202352432
+
+ax = tmp.type.value_counts().plot(kind='bar', title="Transaction type", figsize=(8, 4))
+for p in ax.patches:
+    ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()*1.01))
+ax.set_title("# of transactions per transaction type")
+ax.set_xlabel("(Transaction Type)")
+ax.set_ylabel("Count of transactions")
+plt.show()
+
+ax = pd.value_counts(tmp['isFraud'], sort = True).sort_index().plot(kind='bar', title="Fraud transaction count", figsize=(8, 4))
+for p in ax.patches:
+    ax.annotate(str(format(int(p.get_height()), ',d')), (p.get_x(), p.get_height()))   
+ax.set_title("# of transactions break by actual fraud")
+ax.set_xlabel("(0 = Not Actual Fraud | 1 = Actual Fraud)")
+ax.set_ylabel("Count of transactions")
+plt.show()
+
+```
+
+    Total unber of transactions: 2770409
+    
+
+
+![png](reference/output_37_1.png)
+
+
+
+![png](reference/output_37_2.png)
 
 
 
 ```python
-print("The fraud transaction of the filtered dataset: {0:.4f}%".format((len(tmp[tmp.isFraud == 1])/len(tmp)) * 100))
+print("Fraud ratio of \'Transfer & Cash_Out\' transactions: {0:.4f} %".format((len(tmp[tmp.isFraud == 1])/len(tmp)) * 100))
 ```
 
-    The fraud transaction of the filtered dataset: 0.2965%
+    Fraud ratio of 'Transfer & Cash_Out' transactions: 0.2965 %
+    
+
+### Conduct re-sampling due to imbalanced data
+
+We filtered unrelated transaction type out and keep only relevant transaction types. The fraud occurrence is less than 0.3%. This is very imbalance data.
 
 
-We filtered unrelated transaction type out and keep only relevant. There're 0.3% actual fraud. This is very imbalance data.
-
-
-We then use traditional under-sampling method (there are several other ways; under and over sampling, SMOTE, etc). Sample the dataset by creating a 50-50 ratio of randomly selecting 'x' amount of sample from majority class, with 'x' being the total number of records with the minority class.
+Heavily imbalaned data is to bias machine learning. We need use traditional way to process data, i.e. under-sampling method, over-sampling, SMOTE, etc. Here we under-sample the dataset by creating a 60-40 ratio of randomly selecting '1.5x' amount of sample from majority (Not Fraud) class, with 'x' being the total number of records with the minority (Fraud) class.
 
 
 ```python
@@ -781,8 +1013,10 @@ fraud_indices = tmp[tmp.isFraud == 1].index.values
 # Picking the indices of the normal classes
 normal_indices = tmp[tmp.isFraud == 0].index
 
+number_records_non_fraud = int(number_records_fraud * 1.5)
+
 # Out of the indices we picked, randomly select "x" number (x - same as total fraud)
-random_normal_indices = np.random.choice(normal_indices, number_records_fraud, replace = False)
+random_normal_indices = np.random.choice(normal_indices, number_records_non_fraud, replace = False)
 random_normal_indices = np.array(random_normal_indices)
 
 # Appending the 2 indices
@@ -793,34 +1027,19 @@ X_undersample = under_sample_data.ix[:, under_sample_data.columns != 'isFraud']
 y_undersample = under_sample_data.ix[:, under_sample_data.columns == 'isFraud']
 
 # Showing ratio
-print("Percentage of normal transactions: ", len(under_sample_data[under_sample_data.isFraud == 0])/len(under_sample_data))
-print("Percentage of fraud transactions: ", len(under_sample_data[under_sample_data.isFraud == 1])/len(under_sample_data))
-print("Total number of transactions in resampled data: ", len(under_sample_data))
+print("Percentage of normal transactions : ", len(under_sample_data[under_sample_data.isFraud == 0])/len(under_sample_data))
+print("Percentage of fraud  transactions : ", len(under_sample_data[under_sample_data.isFraud == 1])/len(under_sample_data))
+print("Re-sampled number of transactions : ", len(under_sample_data))
 ```
 
-    Percentage of normal transactions:  0.5
-    Percentage of fraud transactions:  0.5
-    Total number of transactions in resampled data:  16426
+    Percentage of normal transactions :  0.5999902591077343
+    Percentage of fraud  transactions :  0.4000097408922657
+    Re-sampled number of transactions :  20532
+    
 
+## 3. Train Machine Learning Model
 
-### 3. Machine Learning: Simple Logistic Regression Classifier
-
-From the model evaluation (or confusion matrix), we know that
-
- 1. Accuracy = (TP + TN) / Total
-
- 2. Recall = TP / (TP + FN)
-
- 3. Presicion = TP / (TP + FP)
-  
- 4. F Score = 2 ( Recall \* Presicion ) / ( Recall + Presicion )
-
-
-We are interested in the recall score to capture the most fraudulent transactions. As we know, due to the imbalance of the data, many observations could be predicted as False Negatives (missed fraudulent transactions), being, that we predict a normal transaction, but it is in fact a fraudulent one. Recall captures this.
-
-
-Obviously, trying to increase recall, tends to come with a decrease of precision. However, in our case, if we predict that a transaction is fraudulent and turns out not to be. These are False Positive (false alarms).
-
+For demo purpose, we use a simple linear logistic regression classification model. More options include: random forest, gradient boosting, svm, bayesian net, simple or deep neural nets.
 
 
 ```python
@@ -845,10 +1064,10 @@ print("Total number of transactions     : ", format(len(X_train_undersample)+len
 ```
 
     
-    Number transactions train dataset:  11,498
-    Number transactions test  dataset:  4,928
-    Total number of transactions     :  16,426
-
+    Number transactions train dataset:  14,372
+    Number transactions test  dataset:  6,160
+    Total number of transactions     :  20,532
+    
 
 
 ```python
@@ -887,40 +1106,40 @@ X_train_undersample.tail()
   </thead>
   <tbody>
     <tr>
-      <th>2284187</th>
+      <th>2087230</th>
       <td>0</td>
-      <td>-1.035339</td>
+      <td>-0.864005</td>
       <td>-1.019720</td>
       <td>-0.331128</td>
-      <td>1.077342</td>
-      <td>1.073748</td>
+      <td>-0.539393</td>
+      <td>-1.094802</td>
     </tr>
     <tr>
-      <th>598332</th>
-      <td>0</td>
-      <td>-2.081727</td>
-      <td>1.386068</td>
-      <td>3.020656</td>
-      <td>-1.873353</td>
-      <td>-2.249087</td>
-    </tr>
-    <tr>
-      <th>78016</th>
-      <td>0</td>
-      <td>0.956526</td>
-      <td>0.568238</td>
-      <td>-0.331128</td>
-      <td>-1.331427</td>
-      <td>-2.117901</td>
-    </tr>
-    <tr>
-      <th>2664096</th>
+      <th>795461</th>
       <td>1</td>
-      <td>1.427501</td>
+      <td>0.839331</td>
       <td>-1.019720</td>
       <td>-0.331128</td>
-      <td>0.669534</td>
-      <td>0.774910</td>
+      <td>0.030651</td>
+      <td>-0.021810</td>
+    </tr>
+    <tr>
+      <th>2324084</th>
+      <td>0</td>
+      <td>0.405879</td>
+      <td>-1.019720</td>
+      <td>-0.331128</td>
+      <td>1.528904</td>
+      <td>1.710381</td>
+    </tr>
+    <tr>
+      <th>1382240</th>
+      <td>0</td>
+      <td>-1.113565</td>
+      <td>0.932839</td>
+      <td>-0.331128</td>
+      <td>-0.812618</td>
+      <td>-1.440073</td>
     </tr>
     <tr>
       <th>1398669</th>
@@ -969,19 +1188,19 @@ y_train_undersample.tail()
   </thead>
   <tbody>
     <tr>
-      <th>2284187</th>
+      <th>2087230</th>
       <td>0</td>
     </tr>
     <tr>
-      <th>598332</th>
+      <th>795461</th>
       <td>0</td>
     </tr>
     <tr>
-      <th>78016</th>
+      <th>2324084</th>
       <td>0</td>
     </tr>
     <tr>
-      <th>2664096</th>
+      <th>1382240</th>
       <td>0</td>
     </tr>
     <tr>
@@ -1069,106 +1288,145 @@ best_c = printing_Kfold_scores(X_train_undersample,y_train_undersample, k_fold, 
     Regularization Hyper-parameter (to prevent model overfitting):  0.1
     ------------------------------------------------------------------------
     
-    K-Fold Iteration 1: recall = 0.9579, precision = 0.8822
-    K-Fold Iteration 2: recall = 0.9566, precision = 0.8866
-    K-Fold Iteration 3: recall = 0.9652, precision = 0.8657
-    K-Fold Iteration 4: recall = 0.9596, precision = 0.9019
-    K-Fold Iteration 5: recall = 0.9650, precision = 0.8795
+    K-Fold Iteration 1: recall = 0.9302, precision = 0.8906
+    K-Fold Iteration 2: recall = 0.9445, precision = 0.8875
+    K-Fold Iteration 3: recall = 0.9251, precision = 0.8901
+    K-Fold Iteration 4: recall = 0.9482, precision = 0.8702
+    K-Fold Iteration 5: recall = 0.9322, precision = 0.8869
     
-    Mean recall score   : 0.9609
-    Mean precision score: 0.8832
-    F Score             : 0.9204
+    Mean recall score   : 0.9360
+    Mean precision score: 0.8850
+    F Score             : 0.9098
     
     ------------------------------------------------------------------------
     Regularization Hyper-parameter (to prevent model overfitting):  1
     ------------------------------------------------------------------------
     
-    K-Fold Iteration 1: recall = 0.9623, precision = 0.9082
-    K-Fold Iteration 2: recall = 0.9644, precision = 0.9197
-    K-Fold Iteration 3: recall = 0.9706, precision = 0.9075
-    K-Fold Iteration 4: recall = 0.9604, precision = 0.9254
-    K-Fold Iteration 5: recall = 0.9667, precision = 0.9108
+    K-Fold Iteration 1: recall = 0.9424, precision = 0.9060
+    K-Fold Iteration 2: recall = 0.9549, precision = 0.9084
+    K-Fold Iteration 3: recall = 0.9420, precision = 0.9103
+    K-Fold Iteration 4: recall = 0.9543, precision = 0.8902
+    K-Fold Iteration 5: recall = 0.9456, precision = 0.8975
     
-    Mean recall score   : 0.9649
-    Mean precision score: 0.9143
-    F Score             : 0.9389
+    Mean recall score   : 0.9478
+    Mean precision score: 0.9025
+    F Score             : 0.9246
     
     ------------------------------------------------------------------------
     Regularization Hyper-parameter (to prevent model overfitting):  10
     ------------------------------------------------------------------------
     
-    K-Fold Iteration 1: recall = 0.9632, precision = 0.9105
-    K-Fold Iteration 2: recall = 0.9653, precision = 0.9298
-    K-Fold Iteration 3: recall = 0.9706, precision = 0.9121
-    K-Fold Iteration 4: recall = 0.9604, precision = 0.9314
-    K-Fold Iteration 5: recall = 0.9676, precision = 0.9153
+    K-Fold Iteration 1: recall = 0.9468, precision = 0.9125
+    K-Fold Iteration 2: recall = 0.9566, precision = 0.9108
+    K-Fold Iteration 3: recall = 0.9429, precision = 0.9152
+    K-Fold Iteration 4: recall = 0.9578, precision = 0.8942
+    K-Fold Iteration 5: recall = 0.9472, precision = 0.9026
     
-    Mean recall score   : 0.9654
-    Mean precision score: 0.9198
-    F Score             : 0.9421
+    Mean recall score   : 0.9503
+    Mean precision score: 0.9071
+    F Score             : 0.9282
     
     ------------------------------------------------------------------------
     Regularization Hyper-parameter (to prevent model overfitting):  100
     ------------------------------------------------------------------------
     
-    K-Fold Iteration 1: recall = 0.9632, precision = 0.9120
-    K-Fold Iteration 2: recall = 0.9653, precision = 0.9290
-    K-Fold Iteration 3: recall = 0.9706, precision = 0.9121
-    K-Fold Iteration 4: recall = 0.9604, precision = 0.9330
-    K-Fold Iteration 5: recall = 0.9676, precision = 0.9160
+    K-Fold Iteration 1: recall = 0.9468, precision = 0.9133
+    K-Fold Iteration 2: recall = 0.9566, precision = 0.9108
+    K-Fold Iteration 3: recall = 0.9429, precision = 0.9159
+    K-Fold Iteration 4: recall = 0.9587, precision = 0.8950
+    K-Fold Iteration 5: recall = 0.9472, precision = 0.9019
     
-    Mean recall score   : 0.9654
-    Mean precision score: 0.9204
-    F Score             : 0.9424
+    Mean recall score   : 0.9505
+    Mean precision score: 0.9074
+    F Score             : 0.9284
     
     ------------------------------------------------------------------------
     Regularization Hyper-parameter (to prevent model overfitting):  1000
     ------------------------------------------------------------------------
     
-    K-Fold Iteration 1: recall = 0.9632, precision = 0.9120
-    K-Fold Iteration 2: recall = 0.9653, precision = 0.9290
-    K-Fold Iteration 3: recall = 0.9706, precision = 0.9121
-    K-Fold Iteration 4: recall = 0.9604, precision = 0.9330
-    K-Fold Iteration 5: recall = 0.9676, precision = 0.9160
+    K-Fold Iteration 1: recall = 0.9468, precision = 0.9133
+    K-Fold Iteration 2: recall = 0.9566, precision = 0.9108
+    K-Fold Iteration 3: recall = 0.9429, precision = 0.9159
+    K-Fold Iteration 4: recall = 0.9587, precision = 0.8950
+    K-Fold Iteration 5: recall = 0.9472, precision = 0.9019
     
-    Mean recall score   : 0.9654
-    Mean precision score: 0.9204
-    F Score             : 0.9424
+    Mean recall score   : 0.9505
+    Mean precision score: 0.9074
+    F Score             : 0.9284
     
     ------------------------------------------------------------------------
     Regularization Hyper-parameter (to prevent model overfitting):  10000
     ------------------------------------------------------------------------
     
-    K-Fold Iteration 1: recall = 0.9632, precision = 0.9120
-    K-Fold Iteration 2: recall = 0.9653, precision = 0.9290
-    K-Fold Iteration 3: recall = 0.9706, precision = 0.9121
-    K-Fold Iteration 4: recall = 0.9604, precision = 0.9330
-    K-Fold Iteration 5: recall = 0.9676, precision = 0.9160
+    K-Fold Iteration 1: recall = 0.9468, precision = 0.9133
+    K-Fold Iteration 2: recall = 0.9566, precision = 0.9108
+    K-Fold Iteration 3: recall = 0.9429, precision = 0.9159
+    K-Fold Iteration 4: recall = 0.9587, precision = 0.8950
+    K-Fold Iteration 5: recall = 0.9472, precision = 0.9019
     
-    Mean recall score   : 0.9654
-    Mean precision score: 0.9204
-    F Score             : 0.9424
+    Mean recall score   : 0.9505
+    Mean precision score: 0.9074
+    F Score             : 0.9284
     
     ------------------------------------------------------------------------
     Regularization Hyper-parameter (to prevent model overfitting):  100000
     ------------------------------------------------------------------------
     
-    K-Fold Iteration 1: recall = 0.9632, precision = 0.9120
-    K-Fold Iteration 2: recall = 0.9653, precision = 0.9290
-    K-Fold Iteration 3: recall = 0.9706, precision = 0.9121
-    K-Fold Iteration 4: recall = 0.9604, precision = 0.9330
-    K-Fold Iteration 5: recall = 0.9676, precision = 0.9160
+    K-Fold Iteration 1: recall = 0.9468, precision = 0.9133
+    K-Fold Iteration 2: recall = 0.9566, precision = 0.9108
+    K-Fold Iteration 3: recall = 0.9429, precision = 0.9159
+    K-Fold Iteration 4: recall = 0.9587, precision = 0.8950
+    K-Fold Iteration 5: recall = 0.9472, precision = 0.9019
     
-    Mean recall score   : 0.9654
-    Mean precision score: 0.9204
-    F Score             : 0.9424
+    Mean recall score   : 0.9505
+    Mean precision score: 0.9074
+    F Score             : 0.9284
     
     ********************************************************************************************
     Best model to choose from cross validation is with Regularization Hyper-parameter =  100.0
     ********************************************************************************************
+    
+
+## 4. Evaluate Model Performance
+
+confusion matrix & measurement scores:
+
+<img align="left" src='http://www.dataschool.io/content/images/2015/01/confusion_matrix2.png' width=50%>
+
+ 1. Accuracy = (TP + TN) / Total
+
+ 2. Recall = TP / (TP + FN)
+
+ 3. Presicion = TP / (TP + FP)
+  
+ 4. F Score = 2 ( Recall \* Presicion ) / ( Recall + Presicion )
 
 
-### 4. Evaluate Model Performance
+**Recall** score captures mostly true fraudulent transactions. Bust some transacitons could be predicted as **False Negatives (missed fraudulent transactions: lost opportunity to stop loss, bad for bank)**. Sometimes this model may predict a transaciton as normal transaction, but in fact it's a fraudulent one. Recall captures this.
+
+
+But trying to increase recall will decrease **Precision** score (term: Recall Precision Trade-off). In our case, if we predict that a transaction is fraudulent and turns out not to be. These are **False Positive (false alarms: decreased customer satisfaction, bad for customer)**.
+
+
+In most cases, we would like to maximize both scores. And **F Score** is a blending of both.
+
+### 4.1 Existing Model Performance
+* High bias (good for limited senarios: i.e. very high amount transactions)
+* Low variance (high precision)
+
+
+```python
+print("Recall    in the testing dataset: {0:.04f} %".format(16/(4097+4116)*100)) # Transfer + Cash_Out
+print("Precision in the testing dataset: {0:.02f} %".format(100)) # 16 IsFlaggedFraud are all correct actual fraud
+print("F Score   in the testing dataset: {0:.04f} %".format(100 * 2 * 16/(4097+4116) / (16/(4097+4116) + 1)))
+```
+
+    Recall    in the testing dataset: 0.1948 %
+    Precision in the testing dataset: 100.00 %
+    F Score   in the testing dataset: 0.3889 %
+    
+
+### 4.2 This New Machine Learning Model Performance
 
 
 ```python
@@ -1218,8 +1476,13 @@ y_pred_undersample = lr.predict(X_test_undersample.values)
 # Compute confusion matrix
 cnf_matrix = confusion_matrix(y_test_undersample,y_pred_undersample)
 
-print("Recall    in the testing dataset: {0:.4f}".format(cnf_matrix[1,1]/(cnf_matrix[1,0]+cnf_matrix[1,1])))
-print("Precision in the testing dataset: {0:.4f}".format(cnf_matrix[1,1]/(cnf_matrix[0,1]+cnf_matrix[1,1])))
+recall_score = 100*cnf_matrix[1,1]/(cnf_matrix[1,0]+cnf_matrix[1,1])
+precision_score = 100*cnf_matrix[1,1]/(cnf_matrix[0,1]+cnf_matrix[1,1])
+f_score = 2 * recall_score * precision_score / (recall_score + precision_score)
+
+print("Recall    in the testing dataset: {0:.4f} %".format(recall_score))
+print("Precision in the testing dataset: {0:.4f} %".format(precision_score))
+print("F Score   in the testing dataset: {0:.4f} %".format(f_score))
 
 # Plot non-normalized confusion matrix
 class_names = [0,1]
@@ -1239,16 +1502,17 @@ plot_confusion_matrix(cnf_matrix
 plt.show()
 ```
 
-    Recall    in the testing dataset: 0.9594
-    Precision in the testing dataset: 0.9180
+    Recall    in the testing dataset: 94.8395 %
+    Precision in the testing dataset: 91.9622 %
+    F Score   in the testing dataset: 93.3787 %
+    
+
+
+![png](reference/output_54_1.png)
 
 
 
-![png](output_39_1.png)
-
-
-
-![png](output_39_2.png)
+![png](reference/output_54_2.png)
 
 
 
@@ -1276,7 +1540,7 @@ plt.show()
 ```
 
 
-![png](output_40_0.png)
+![png](reference/output_55_0.png)
 
 
 
@@ -1286,19 +1550,27 @@ print('Lift Score: {0:.02f} %'.format(100 * roc_auc / roc_auc_org))
 ```
 
     How much degree the new model is better than the original model?
-    Lift Score: 196.64 %
+    Lift Score: 196.83 %
+    
+
+# Congratulations! A technically sound analytic model is built successfully!
+
+# Question: Is this model good enough to propose to business department stakeholders for practical use?
+
+### Answer: Probably <font color='red'>not</font>! Why?! Which piece of insight is missing? Well, stay tuned ^___^
+
+By: 
 
 
-### End of Analysis
+顾 瞻 GU Zhan (Sam) [LinkedIn](https://sg.linkedin.com/in/zhan-gu-27a82823)
 
-June 2017
-
-
-By: GU Zhan (Sam) [LinkedIn](https://sg.linkedin.com/in/zhan-gu-27a82823)
 
 [SamIsITspecialist@gmail.com](SamIsITspecialist@gmail.com)
 
 
-Copyright 2016-2017 Some Rights Reserved
+June 2017
+
+
+Copyright 2017 GU Zhan (Sam) Some Rights Reserved
 
 ---
